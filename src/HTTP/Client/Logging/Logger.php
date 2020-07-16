@@ -14,7 +14,12 @@ class Logger
 {
     private LoggerInterface $logger;
 
-    private array $options = [];
+    private array $options = [
+        'message' => 'http_client_request',                         // 日志message的值
+        'logNetworkCosts' => true,                                  // 记录上下行网络耗时
+        'reqRecvTimeHeader' => 'x-request-received-time-ms',        // 收到请求的时间header名
+        'respSentTimeHeader' => 'x-response-sent-time-ms',          // 发送响应的时间header名
+    ];
 
     public function __construct(LoggerInterface $logger, array $options)
     {
@@ -70,11 +75,11 @@ class Logger
 
     private function getHeaders(MessageInterface $r): array
     {
-        $requestHeaders = [];
+        $headers = [];
         foreach ($r->getHeaders() as $name => $_) {
-            $requestHeaders[$name] = $r->getHeaderLine($name);
+            $headers[$name] = $r->getHeaderLine($name);
         }
 
-        return $requestHeaders;
+        return $headers;
     }
 }
