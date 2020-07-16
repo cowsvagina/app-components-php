@@ -39,33 +39,33 @@ class Logger
 
     }
 
-    private function extractCosts(RequestInterface $request, ?ResponseInterface $response, array &$extra): array
+    private function extractCosts(?ResponseInterface $response, array &$extra): array
     {
-        $cost = [];
+        $costs = [];
         $timeBefore = intval($extra['timeBefore'] ?? 0);
         $timeAfter = intval($extra['timeAfter'] ?? 0);
 
         if ($timeAfter > 0 && $timeBefore > 0) {
-            $cost['total'] = $timeAfter - $timeBefore;
+            $costs['total'] = $timeAfter - $timeBefore;
         }
 
         if (!$response) {
-            return $cost;
+            return $costs;
         }
 
         // 上行网络耗时
-        $requestReceiptTime = $response->getHeaderLine('x-request-received-time-ms');
-        if ($timeBefore > 0 && is_numeric($requestReceiptTime)) {
-            $logContext['upstream'] = (intval($requestReceiptTime) / 1000) - (intval($timeBefore * 1000) / 1000);
+        $requestReceivedTime = $response->getHeaderLine($this->options['reqRecvTimeHeader']);
+        if ($timeBefore > 0 && is_numeric($requestReceivedTime)) {
+            $logContext['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBefore * 1000) / 1000);
         }
 
         // 下行网络耗时
-        $responseSentTime = $response->getHeaderLine('x-response-sent-time-ms');
+        $responseSentTime = $response->getHeaderLine($this->options['respSentTimeHeader']);
         if ($timeAfter > 0 && is_numeric($responseSentTime)) {
             $logContext['downstream'] = (intval($timeAfter * 1000) / 1000) - intval($responseSentTime) / 1000;
         }
 
-        return $cost;
+        return $costs;
     }
 
     private function getHeaders(MessageInterface $r): array
