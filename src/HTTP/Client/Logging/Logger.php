@@ -17,8 +17,9 @@ class Logger
     private array $options = [
         'message' => 'http_client_request',                         // 日志message的值
         'logNetworkCosts' => true,                                  // 记录上下行网络耗时
-        'reqRecvTimeHeader' => 'x-request-received-time-ms',        // 收到请求的时间header名
-        'respSentTimeHeader' => 'x-response-sent-time-ms',          // 发送响应的时间header名
+        'reqRecvTimeHeader' => 'x-request-received-time-ms',        // 响应中的header名,该header记录了远端<收到>请求的毫秒时间戳
+        'respSentTimeHeader' => 'x-response-sent-time-ms',          // 响应中的header名,该header记录了远端<发送>响应的毫秒时间戳
+        'originalHostHeader' => 'x-proxy-to',                        // 请求中的header名,该header记录使用了http代理时,原域名的值
     ];
 
     public function __construct(LoggerInterface $logger, array $options)
