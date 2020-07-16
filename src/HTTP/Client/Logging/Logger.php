@@ -22,11 +22,12 @@ class Logger
         $this->options = $options;
     }
 
-    private function getCost(RequestInterface $request, ?ResponseInterface $response, array &$extra): array
+    private function extractCosts(RequestInterface $request, ?ResponseInterface $response, array &$extra): array
     {
         $cost = [];
         $timeBefore = intval($extra['timeBefore'] ?? 0);
         $timeAfter = intval($extra['timeAfter'] ?? 0);
+
         if ($timeAfter > 0 && $timeBefore > 0) {
             $cost['total'] = $timeAfter - $timeBefore;
         }
@@ -38,13 +39,13 @@ class Logger
         // 上行网络耗时
         $requestReceiptTime = $response->getHeaderLine('x-request-received-time-ms');
         if ($timeBefore > 0 && is_numeric($requestReceiptTime)) {
-            $logContext['upstreamNetworkCost'] = (intval($requestReceiptTime) / 1000) - (intval($timeBefore * 1000) / 1000);
+            $logContext['upstream'] = (intval($requestReceiptTime) / 1000) - (intval($timeBefore * 1000) / 1000);
         }
 
         // 下行网络耗时
         $responseSentTime = $response->getHeaderLine('x-response-sent-time-ms');
         if ($timeAfter > 0 && is_numeric($responseSentTime)) {
-            $logContext['downstreamNetworkCost'] = (intval($timeAfter * 1000) / 1000) - intval($responseSentTime) / 1000;
+            $logContext['downstream'] = (intval($timeAfter * 1000) / 1000) - intval($responseSentTime) / 1000;
         }
 
         return $cost;
