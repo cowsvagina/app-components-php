@@ -22,6 +22,23 @@ class Logger
         $this->options = $options;
     }
 
+    /**
+     * 记录日志.
+     *
+     * @param string $tag
+     * @param RequestInterface $request
+     * @param ResponseInterface|null $response
+     * @param \Throwable|null $exception
+     * @param array $extra [
+     *      'timeBefore': (float|int),      // 请求前时间戳(允许带小数表示毫微纳秒)
+     *      'timeAfter': (float|int),       // 响应后时间戳(允许带小数表示毫微纳秒)
+     * ]
+     */
+    public function log(string $tag, RequestInterface $request, ?ResponseInterface $response, ?\Throwable $exception = null, array $extra = [])
+    {
+
+    }
+
     private function extractCosts(RequestInterface $request, ?ResponseInterface $response, array &$extra): array
     {
         $cost = [];
