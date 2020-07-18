@@ -2,6 +2,7 @@
     "name": "cowsvagina/php-components",
     "require": {
         "psr/log": "~1.0",
-        "psr/http-message": "~1.0"
+        "psr/http-message": "~1.0",
+        "guzzlehttp/guzzle": "^7.0"
     }
 }
