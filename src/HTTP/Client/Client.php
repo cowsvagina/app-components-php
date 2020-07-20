@@ -2,24 +2,23 @@
 
 declare(strict_types=1);
 
-namespace NB\HTTP\Client\Logging;
+namespace NB\HTTP\Client;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Promise\PromiseInterface;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Client extends \GuzzleHttp\Client
 {
-    private Logger $logger;
+    private ?Logger $logger;
 
     public function __construct(array $config = [], Logger $logger = null)
     {
         parent::__construct($config);
-        $this->logger = $logger;
 
+        $this->logger = $logger;
         $config = $this->getConfig();
         /** @var HandlerStack $stack */
         $stack = $config['stack'];

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\HTTP\Client\Logging;
+namespace NB\HTTP\Client;
 
 use GuzzleHttp\Exception\RequestException;
 use NB\HTTP\Helper;
