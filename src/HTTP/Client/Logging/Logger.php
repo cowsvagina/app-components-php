@@ -43,20 +43,18 @@ class Logger
     /**
      * 记录日志.
      *
-     * @param string $tag
      * @param RequestInterface $request
      * @param ResponseInterface|null $response
      * @param array $extra [
-     *      exception: (\Throwable),      // 请求产生的异常
-     *      timeBefore: (float|int),      // 请求前时间戳(允许带小数表示毫微纳秒)
-     *      timeAfter: (float|int),       // 响应后时间戳(允许带小数表示毫微纳秒)
+     *      exception: (\Throwable),            // 请求产生的异常
+     *      timeBeforeRequest: (float|int),     // 请求前时间戳(允许带小数表示毫微纳秒)
+     *      timeAfterRespond: (float|int),      // 响应后时间戳(允许带小数表示毫微纳秒)
      * ]
      */
-    public function log(string $tag, RequestInterface $request, ?ResponseInterface $response, array $extra = [])
+    public function log(RequestInterface $request, ?ResponseInterface $response, array $extra = [])
     {
         try {
             $logContext = [
-                'tag' => $tag,
                 'request' => $this->extraRequestInfo($request),
                 'response' => $this->extractResponseInfo($response),
             ];
@@ -70,6 +68,8 @@ class Logger
             if (!($exception instanceof \Throwable)) {
                 $exception = null;
             }
+
+            unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
 
             // 提取错误中的curl信息
             if ($curlInfo = $this->extractCurlInfo($exception)) {
@@ -90,17 +90,17 @@ class Logger
                 $logLevel = 'warning';
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($this->options['failingLogMsg'], [
-                'tag' => $tag,
+            unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
+            $this->logger->error($this->options['failingLogMsg'], array_merge($extra, [
                 'error' => [
                     'msg' => $exception->getMessage(),
                     'trace' => explode("\n", $exception->getTraceAsString()),
                 ],
-            ]);
+            ]));
             return;
         }
 
-        $this->logger->log($logLevel, $this->options['message'], $logContext);
+        $this->logger->log($logLevel, $this->options['message'], array_merge($extra, $logContext));
     }
 
     protected function extraRequestInfo(RequestInterface $request): array
@@ -185,11 +185,11 @@ class Logger
     protected function extractCosts(?ResponseInterface $response, array &$extra): array
     {
         $costs = [];
-        $timeBefore = intval($extra['timeBefore'] ?? 0);
-        $timeAfter = intval($extra['timeAfter'] ?? 0);
+        $timeBeforeRequest = intval($extra['timeBeforeRequest'] ?? 0);
+        $timeAfterRespond = intval($extra['timeAfterRespond'] ?? 0);
 
-        if ($timeAfter > 0 && $timeBefore > 0) {
-            $costs['total'] = $timeAfter - $timeBefore;
+        if ($timeAfterRespond > 0 && $timeBeforeRequest > 0) {
+            $costs['total'] = $timeAfterRespond - $timeBeforeRequest;
         }
 
         if (!$response) {
@@ -199,16 +199,16 @@ class Logger
         // 上行网络耗时
         if ($this->options['requestRecvTimeHeader']) {
             $requestReceivedTime = $response->getHeaderLine($this->options['requestRecvTimeHeader']);
-            if ($timeBefore > 0 && is_numeric($requestReceivedTime)) {
-                $logContext['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBefore * 1000) / 1000);
+            if ($timeBeforeRequest > 0 && is_numeric($requestReceivedTime)) {
+                $logContext['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBeforeRequest * 1000) / 1000);
             }
         }
 
         // 下行网络耗时
         if ($this->options['responseSentTimeHeader']) {
             $responseSentTime = $response->getHeaderLine($this->options['responseSentTimeHeader']);
-            if ($timeAfter > 0 && is_numeric($responseSentTime)) {
-                $logContext['downstream'] = (intval($timeAfter * 1000) / 1000) - intval($responseSentTime) / 1000;
+            if ($timeAfterRespond > 0 && is_numeric($responseSentTime)) {
+                $logContext['downstream'] = (intval($timeAfterRespond * 1000) / 1000) - intval($responseSentTime) / 1000;
             }
         }
 
