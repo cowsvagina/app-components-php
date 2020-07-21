@@ -28,10 +28,12 @@ class Client extends \GuzzleHttp\Client
                 /** @var PromiseInterface $promise */
                 $promise = $handler($request, $options);
                 $promise->then(function (ResponseInterface $response = null) use ($request, $timeBeforeRequest, $options) {
-                    $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
-                        'timeBeforeRequest' => $timeBeforeRequest,
-                        'timeAfterRespond' => microtime(true),
-                    ]));
+                    if ($this->logger) {
+                        $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
+                            'timeBeforeRequest' => $timeBeforeRequest,
+                            'timeAfterRespond' => microtime(true),
+                        ]));
+                    }
 
                     return $response;
                 }, function(\Throwable $e = null) use ($request, $timeBeforeRequest, $options) {
@@ -39,11 +41,13 @@ class Client extends \GuzzleHttp\Client
                     if ($e instanceof RequestException) {
                         $response = $e->getResponse();
                     }
-                    $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
-                        'timeBeforeRequest' => $timeBeforeRequest,
-                        'timeAfterRespond' => microtime(true),
-                        'exception' => $e,
-                    ]));
+                    if ($this->logger) {
+                        $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
+                            'timeBeforeRequest' => $timeBeforeRequest,
+                            'timeAfterRespond' => microtime(true),
+                            'exception' => $e,
+                        ]));
+                    }
 
                     throw $e;
                 });
