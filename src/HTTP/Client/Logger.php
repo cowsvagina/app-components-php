@@ -117,7 +117,7 @@ class Logger
             $info['headers'] = $this->getHeaders($request) ?: new class{};
         }
 
-        if ($query = Helper::parseQuery($uri->getQuery())) {
+        if ($query = Helper::parseQuery($uri->getQuery(), PHP_QUERY_RFC3986)) {
             $info['query'] = $query ?: new class{};
         }
 
