@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NB\Components\Test\HTTP\Client;
 
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Request;
@@ -102,6 +103,33 @@ class LoggerTest extends TestCase
             ],
             'exception' => [
                 'msg' => 'error',
+            ],
+        ];
+        $this->assertEquals($expect, $mLogger->getLatestContext());
+
+        ///////////////////////////////////////////////////////
+
+        $uri = new Uri("https://abc.com/test");
+        $request = new Request('POST', $uri);
+        (new Logger($mLogger, []))->log($request, null, [
+            'exception' => new RequestException("timed out", $request, null, null, [
+                'errno' => 28,
+                'error' => 'xxx',
+            ]),
+        ]);
+        $expect = [
+            'request' => [
+                'method' => 'POST',
+                'scheme' => 'https',
+                'host' => 'abc.com',
+                'path' => '/test',
+                'headers' => [
+                    'Host' => 'abc.com',
+                ],
+            ],
+            'curl' => [
+                'errno' => 28,
+                'error' => 'xxx',
             ],
         ];
         $this->assertEquals($expect, $mLogger->getLatestContext());
