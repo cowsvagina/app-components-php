@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NB\HTTP\Client;
+namespace NB\Components\HTTP\Client;
 
 use GuzzleHttp\Exception\RequestException;
-use NB\HTTP\Helper;
+use NB\Components\HTTP\Helper;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;

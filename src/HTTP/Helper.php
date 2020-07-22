@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\HTTP;
+namespace NB\Components\HTTP;
 
 class Helper
 {
