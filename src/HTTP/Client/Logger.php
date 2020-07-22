@@ -34,10 +34,10 @@ class Logger
         'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时
     ];
 
-    public function __construct(LoggerInterface $logger, array $options)
+    public function __construct(LoggerInterface $logger, array $options = [])
     {
         $this->logger = $logger;
-        $this->options = $options;
+        $this->options = array_merge($this->options, $options);
     }
 
     /**
