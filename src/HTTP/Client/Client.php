@@ -79,7 +79,7 @@ class Client extends \GuzzleHttp\Client
                 $promise = $handler($request, $options);
                 $promise = $promise->then(function (ResponseInterface $response = null) use ($request, $timeBeforeRequest, $options) {
                     if ($this->logger) {
-                        $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
+                        $this->logger->log($request, $response, array_merge($options['loggingContext'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => microtime(true),
                         ]));
@@ -93,7 +93,7 @@ class Client extends \GuzzleHttp\Client
                             $response = $e->getResponse();
                         }
 
-                        $this->logger->log($request, $response, array_merge($options['loggingInfo'], [
+                        $this->logger->log($request, $response, array_merge($options['loggingContext'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => microtime(true),
                             'exception' => $e,
