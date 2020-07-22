@@ -19,8 +19,7 @@ class LoggerTest extends TestCase
 
         $uri = new Uri("https://abc.com/test?abc=def&a%20b%20c=aaa");
         $request = new Request('POST', $uri);
-        $logger = new Logger($mLogger);
-        $logger->log($request, null);
+        (new Logger($mLogger))->log($request, null);
         $expect = [
             'request' => [
                 'method' => 'POST',
@@ -42,8 +41,9 @@ class LoggerTest extends TestCase
 
         $uri = new Uri("https://abc.com/test");
         $request = new Request('POST', $uri);
-        $logger = new Logger($mLogger, ['logRequestHeaders' => false]);
-        $logger->log($request, null);
+        (new Logger($mLogger, [
+            'logRequestHeaders' => false
+        ]))->log($request, null);
         unset($expect['request']['headers'], $expect['request']['query']);
         $this->assertEquals($expect, $mLogger->getLatestContext());
 
@@ -53,17 +53,16 @@ class LoggerTest extends TestCase
         $request = new Request('POST', $uri, [
             'Content-Type' => 'application/x-www-form-urlencoded',
         ], stream_for('abc=def&xyz=123'));
-        $logger = new Logger($mLogger, [
-            'requestRecvTimeHeader' => 'X-Request-Received-Time',
-            'responseSentTimeHeader' => 'X-Response-Time',
-            'logExceptionTrace' => false,
-        ]);
         $response = new Response(200, [
             'Content-Type' => 'application/json',
             'X-Request-Received-Time' => '1500',
             'X-Response-Time' => '1700',
         ], stream_for('{"abc":"123"}'));
-        $logger->log($request, $response, [
+        (new Logger($mLogger, [
+            'requestRecvTimeHeader' => 'X-Request-Received-Time',
+            'responseSentTimeHeader' => 'X-Response-Time',
+            'logExceptionTrace' => false,
+        ]))->log($request, $response, [
             'timeBeforeRequest' => 1,
             'timeAfterRespond' => 2,
             'exception' => new \Exception('error'),
