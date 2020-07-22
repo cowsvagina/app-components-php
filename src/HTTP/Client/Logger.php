@@ -30,8 +30,8 @@ class Logger
             'application/json',
             'application/xml',
         ],
-        'requestRecvTimeHeader' => '',                  // 响应中的header名,该header记录了远端<收到>请求时的毫秒时间戳,用于粗算网络上行耗时
-        'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时
+        'requestRecvTimeHeader' => '',                  // 响应中的header名,该header记录了远端<收到>请求时的毫秒时间戳,用于粗算网络上行耗时,该header的值必须为毫秒时间戳
+        'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时,该header的值必须为毫秒时间戳
     ];
 
     public function __construct(LoggerInterface $logger, array $options = [])
@@ -56,8 +56,11 @@ class Logger
         try {
             $logContext = [
                 'request' => $this->extraRequestInfo($request),
-                'response' => $this->extractResponseInfo($response),
             ];
+
+            if ($response) {
+                $logContext['response'] = $this->extractResponseInfo($response);
+            }
 
             // 提取耗时信息
             if ($costs = $this->extractCosts($response, $extra)) {
@@ -78,7 +81,7 @@ class Logger
 
             // 提取异常消息和trace信息
             if ($exceptionInfo = $this->extractExceptionInfo($exception)) {
-                $logContext['error'] = $exceptionInfo;
+                $logContext['exception'] = $exceptionInfo;
             }
 
             if ($response instanceof ResponseInterface) {
@@ -113,12 +116,12 @@ class Logger
             'path' => $uri->getPath(),
         ];
 
-        if ($this->options['logRequestHeaders']) {
-            $info['headers'] = $this->getHeaders($request) ?: new class{};
+        if ($this->options['logRequestHeaders'] && $headers = $this->getHeaders($request)) {
+            $info['headers'] = $headers;
         }
 
         if ($query = Helper::parseQuery($uri->getQuery(), PHP_QUERY_RFC3986)) {
-            $info['query'] = $query ?: new class{};
+            $info['query'] = $query;
         }
 
         $data = $this->extractRequestBody($request);
@@ -127,18 +130,14 @@ class Logger
         return $info;
     }
 
-    protected function extractResponseInfo(?ResponseInterface $response): array
+    protected function extractResponseInfo(ResponseInterface $response): array
     {
-        if (!$response) {
-            return [];
-        }
-
         $info = [
             'status' => $response->getStatusCode(),
         ];
 
-        if ($this->options['logResponseHeaders']) {
-            $info['headers'] = $this->getHeaders($response);
+        if ($this->options['logResponseHeaders'] && $headers = $this->getHeaders($response)) {
+            $info['headers'] = $headers;
         }
 
         $body = $this->extraResponseBody($response);
@@ -200,7 +199,7 @@ class Logger
         if ($this->options['requestRecvTimeHeader']) {
             $requestReceivedTime = $response->getHeaderLine($this->options['requestRecvTimeHeader']);
             if ($timeBeforeRequest > 0 && is_numeric($requestReceivedTime)) {
-                $logContext['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBeforeRequest * 1000) / 1000);
+                $costs['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBeforeRequest * 1000) / 1000);
             }
         }
 
@@ -208,7 +207,7 @@ class Logger
         if ($this->options['responseSentTimeHeader']) {
             $responseSentTime = $response->getHeaderLine($this->options['responseSentTimeHeader']);
             if ($timeAfterRespond > 0 && is_numeric($responseSentTime)) {
-                $logContext['downstream'] = (intval($timeAfterRespond * 1000) / 1000) - intval($responseSentTime) / 1000;
+                $costs['downstream'] = (intval($timeAfterRespond * 1000) / 1000) - intval($responseSentTime) / 1000;
             }
         }
 
