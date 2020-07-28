@@ -25,10 +25,10 @@ class Client extends \GuzzleHttp\Client
         /** @var \Throwable|null */
         'exception' => null,
 
-        /** @var float 发送请求前的时间戳(带小数表示毫微纳秒) */
+        /** @var float 发送请求前的时间戳(通过microtime(true)获得,带小数表示毫微纳秒) */
         'timeBeforeRequest' => 0,
 
-        /** @var float 收到响应后的时间戳(带小数表示毫微纳秒) */
+        /** @var float 收到响应后的时间戳(通过microtime(true)获得,带小数表示毫微纳秒) */
         'timeAfterRespond' => 0,
     ];
 
@@ -40,12 +40,24 @@ class Client extends \GuzzleHttp\Client
 
     private bool $middlewareRegistered = false;
 
+    /**
+     * @param array $config GuzzleHTTP的配置信息
+     * @param Logger|null $logger
+     * @param array $options [
+     *      'recordingMiddlewareName' => (string),          // Client指定中间件名称
+     *      'logExtra' => (array),                          // 记录日志的额外信息
+     * ]
+     */
     public function __construct(array $config = [], Logger $logger = null,  array $options = [])
     {
         parent::__construct($config);
 
         $this->logger = $logger;
         $this->options = array_merge($this->options, $options);
+        if (!is_array($this->options['logExtra'])) {
+            // 保证logExtra是数组类型
+            $this->options['logExtra'] = [];
+        }
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
@@ -102,19 +114,19 @@ class Client extends \GuzzleHttp\Client
                 $timeBeforeRequest = microtime(true);
                 /** @var PromiseInterface $promise */
                 $promise = $handler($request, $options);
-                $promise = $promise->then(function (ResponseInterface $response = null) use ($request, $timeBeforeRequest, $options) {
+                $promise = $promise->then(function (ResponseInterface $response = null) use ($request, $timeBeforeRequest) {
                     $timeAfterRespond = microtime(true);
                     $this->setLastRequestInfo($request, $response, null, $timeBeforeRequest, $timeAfterRespond);
 
                     if ($this->logger) {
-                        $this->logger->log($request, $response, array_merge($options['loggingContext'], [
+                        $this->logger->log($request, $response, array_merge($this->options['logExtra'] ?? [], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => $timeAfterRespond,
                         ]));
                     }
 
                     return $response;
-                }, function(\Throwable $e = null) use ($request, $timeBeforeRequest, $options) {
+                }, function(\Throwable $e = null) use ($request, $timeBeforeRequest) {
                     $response = null;
                     if ($e instanceof RequestException) {
                         $response = $e->getResponse();
@@ -124,7 +136,7 @@ class Client extends \GuzzleHttp\Client
                     $this->setLastRequestInfo($request, $response, $e, $timeBeforeRequest, $timeAfterRespond);
 
                     if ($this->logger) {
-                        $this->logger->log($request, $response, array_merge($options['loggingContext'], [
+                        $this->logger->log($request, $response, array_merge($this->options['logExtra'] ?? [], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => $timeAfterRespond,
                             'exception' => $e,
