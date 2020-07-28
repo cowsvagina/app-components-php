@@ -34,13 +34,18 @@ class Client extends \GuzzleHttp\Client
 
     private ?Logger $logger;
 
+    private array $options = [
+        'recordingMiddlewareName' => 'http_request_info_recording',
+    ];
+
     private bool $middlewareRegistered = false;
 
-    public function __construct(array $config = [], Logger $logger = null)
+    public function __construct(array $config = [], Logger $logger = null,  array $options = [])
     {
         parent::__construct($config);
 
         $this->logger = $logger;
+        $this->options = array_merge($this->options, $options);
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
@@ -131,7 +136,7 @@ class Client extends \GuzzleHttp\Client
 
                 return $promise;
             };
-        }, 'http_request_info_recording');
+        }, $this->options['recordingMiddlewareName']);
 
         $this->middlewareRegistered = true;
     }
