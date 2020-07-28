@@ -6,6 +6,7 @@ namespace NB\Components;
 
 trait SingletonTrait
 {
+    /** @var mixed */
     protected static $instance;
 
     /**
