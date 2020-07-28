@@ -18,18 +18,17 @@ class Logger
     private array $options = [
         'message' => 'http_client_request',             // 日志message的值
         'failingLogMsg' => 'http_client_failing_log',   // 提取日志信息出错时的补充日志message
-        'logRequestHeaders' => true,                    // 是否记录请求header
-        'logResponseHeaders' => true,                   // 是否记录响应header
-        'logExceptionTrace' => true,                    // 是否记录异常trace
-        'logRequestBodyTypes' => [                      // 指定哪些类型的请求体内容需要被记录下来, application/x-www-form-urlencoded类型会被解析为数组形式
-            'application/json',
-            'application/xml',
-            'application/x-www-form-urlencoded',
-        ],
-        'logResponseBodyTypes' => [                     // 指定哪些类型的响应体内容需要被记录下来
-            'application/json',
-            'application/xml',
-        ],
+        'logRequestHeaders' => false,                   // 是否记录请求header
+        'logResponseHeaders' => false,                  // 是否记录响应header
+        'logExceptionTrace' => false,                   // 是否记录异常trace
+        'logRequestBodyTypes' => [],                    // 指定哪些类型的请求体内容需要被记录下来, 示例:
+                                                        // 匹配如下Content-Type时会记录request请求体信息
+                                                        //  [
+                                                        //      'application/json',
+                                                        //      'application/xml',
+                                                        //      'application/x-www-form-urlencoded',
+                                                        //  ],
+        'logResponseBodyTypes' => [],                   // 指定哪些类型的响应体内容需要被记录下来, 匹配方式同上
         'requestRecvTimeHeader' => '',                  // 响应中的header名,该header记录了远端<收到>请求时的毫秒时间戳,用于粗算网络上行耗时,该header的值必须为毫秒时间戳
         'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时,该header的值必须为毫秒时间戳
         'logExtra' => [],                               // 该字段允许预设一些信息,在每一次调用log方法时,这些都会成为extra信息中的一部分,它们可以被log方法的$extra参数中的信息覆盖

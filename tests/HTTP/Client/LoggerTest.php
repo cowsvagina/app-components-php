@@ -36,9 +36,6 @@ class LoggerTest extends TestCase
                     'abc' => 'def',
                     'a b c' => 'aaa',
                 ],
-                'headers' => [
-                    'Host' => 'abc.com',
-                ],
             ],
             'abc' => 'def',
         ];
@@ -69,9 +66,17 @@ class LoggerTest extends TestCase
             'X-Response-Time' => '1700',
         ], stream_for('{"abc":"123"}'));
         (new Logger($mLogger, [
+            'logRequestHeaders' => true,
+            'logResponseHeaders' => true,
             'requestRecvTimeHeader' => 'X-Request-Received-Time',
             'responseSentTimeHeader' => 'X-Response-Time',
             'logExceptionTrace' => false,
+            'logRequestBodyTypes' => [
+                'application/x-www-form-urlencoded',
+            ],
+            'logResponseBodyTypes' => [
+                'application/json',
+            ],
             'logExtra' => [
                 'x1' => 'y1',
                 'x2' => 'y2',
@@ -127,7 +132,9 @@ class LoggerTest extends TestCase
 
         $uri = new Uri("https://abc.com/test");
         $request = new Request('POST', $uri);
-        (new Logger($mLogger, []))->log($request, null, [
+        (new Logger($mLogger, [
+            'logRequestHeaders' => true,]
+        ))->log($request, null, [
             'exception' => new RequestException("timed out", $request, null, null, [
                 'errno' => 28,
                 'error' => 'xxx',
