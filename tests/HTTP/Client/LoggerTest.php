@@ -6,6 +6,7 @@ namespace NB\Components\Test\HTTP\Client;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
+use NB\Components\Test\Mock\MemoryLogger;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;

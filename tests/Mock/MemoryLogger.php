@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\Test\HTTP\Client;
+namespace NB\Components\Test\Mock;
 
 use Psr\Log\LoggerInterface;
 
