@@ -1,5 +1,5 @@
 {
-    "name": "cowsvagina/php-components",
+    "name": "cowsvagina/app-components-php",
     "authors": [
         {
             "name":     "Long Haibin",
@@ -19,8 +19,8 @@
     },
     "autoload": {
         "psr-4": {
-            "NB\\Components\\": "src/",
-            "NB\\Components\\Test\\": "tests/"
+            "NB\\AppComponents\\": "src/",
+            "NB\\AppComponents\\Test\\": "tests/"
         }
     }
 }
