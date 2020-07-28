@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\Logging\Exceptions;
+namespace NB\AppComponents\Logging\Exceptions;
 
 use Psr\Container\NotFoundExceptionInterface;
 

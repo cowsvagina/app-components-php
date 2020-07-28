@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\Test\HTTP\Client;
+namespace NB\AppComponents\Test\HTTP\Client;
 
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
-use NB\Components\Test\Mock\MemoryLogger;
-use PHPUnit\Framework\TestCase;
-use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
-use NB\Components\HTTP\Client\Logger;
+use NB\AppComponents\HTTP\Client\Logger;
+use NB\AppComponents\Test\Mock\MemoryLogger;
+use PHPUnit\Framework\TestCase;
 use function GuzzleHttp\Psr7\stream_for;
 
 class LoggerTest extends TestCase

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\Logging;
+namespace NB\AppComponents\Logging;
 
-use NB\Components\Logging\Exceptions\LoggerContainerException;
-use NB\Components\Logging\Exceptions\LoggerNotFoundException;
+use NB\AppComponents\Logging\Exceptions\LoggerContainerException;
+use NB\AppComponents\Logging\Exceptions\LoggerNotFoundException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 

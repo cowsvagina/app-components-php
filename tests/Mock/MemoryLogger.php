@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\Test\Mock;
+namespace NB\AppComponents\Test\Mock;
 
 use Psr\Log\LoggerInterface;
 

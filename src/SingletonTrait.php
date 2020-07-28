@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\Components;
+namespace NB\AppComponents;
 
 trait SingletonTrait
 {

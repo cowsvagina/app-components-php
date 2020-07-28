@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NB\Components\HTTP\Client;
+namespace NB\AppComponents\HTTP\Client;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\HandlerStack;
