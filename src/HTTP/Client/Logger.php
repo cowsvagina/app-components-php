@@ -32,12 +32,17 @@ class Logger
         ],
         'requestRecvTimeHeader' => '',                  // 响应中的header名,该header记录了远端<收到>请求时的毫秒时间戳,用于粗算网络上行耗时,该header的值必须为毫秒时间戳
         'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时,该header的值必须为毫秒时间戳
+        'logExtra' => [],                               // 该字段允许预设一些信息,在每一次调用log方法时,这些都会成为extra信息中的一部分,它们可以被log方法的$extra参数中的信息覆盖
     ];
 
     public function __construct(LoggerInterface $logger, array $options = [])
     {
         $this->logger = $logger;
         $this->options = array_merge($this->options, $options);
+        if (!is_array($this->options['logExtra'])) {
+            // logExtra必须为数组
+            $this->options['logExtra'] = [];
+        }
     }
 
     /**
@@ -45,7 +50,7 @@ class Logger
      *
      * @param RequestInterface $request
      * @param ResponseInterface|null $response
-     * @param array $extra [
+     * @param array $extra 一些预定的字段,用于记录特殊信息 [
      *      exception: (\Throwable),            // 请求产生的异常
      *      timeBeforeRequest: (float|int),     // 请求前时间戳(允许带小数表示毫微纳秒)
      *      timeAfterRespond: (float|int),      // 响应后时间戳(允许带小数表示毫微纳秒)
@@ -73,6 +78,7 @@ class Logger
             }
 
             unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
+            $extra = array_merge($this->options['logExtra'], $extra);
 
             // 提取错误中的curl信息
             if ($curlInfo = $this->extractCurlInfo($exception)) {
@@ -94,6 +100,7 @@ class Logger
             }
         } catch (\Throwable $exception) {
             unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
+            $extra = array_merge($this->options['logExtra'], $extra);
             $this->logger->error($this->options['failingLogMsg'], array_merge($extra, [
                 'error' => [
                     'msg' => $exception->getMessage(),

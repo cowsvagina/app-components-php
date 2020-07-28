@@ -21,7 +21,11 @@ class LoggerTest extends TestCase
 
         $uri = new Uri("https://abc.com/test?abc=def&a%20b%20c=aaa");
         $request = new Request('POST', $uri);
-        (new Logger($mLogger))->log($request, null);
+        (new Logger($mLogger, [
+            'logExtra' => [
+                'abc' => 'def',
+            ],
+        ]))->log($request, null);
         $expect = [
             'request' => [
                 'method' => 'POST',
@@ -36,6 +40,7 @@ class LoggerTest extends TestCase
                     'Host' => 'abc.com',
                 ],
             ],
+            'abc' => 'def',
         ];
         $this->assertEquals($expect, $mLogger->getLatestContext());
 
@@ -44,8 +49,11 @@ class LoggerTest extends TestCase
         $uri = new Uri("https://abc.com/test");
         $request = new Request('POST', $uri);
         (new Logger($mLogger, [
-            'logRequestHeaders' => false
-        ]))->log($request, null);
+            'logRequestHeaders' => false,
+            'logExtra' => [
+                'abc' => '123',
+            ],
+        ]))->log($request, null, ['abc' => 'def']);
         unset($expect['request']['headers'], $expect['request']['query']);
         $this->assertEquals($expect, $mLogger->getLatestContext());
 
@@ -64,10 +72,15 @@ class LoggerTest extends TestCase
             'requestRecvTimeHeader' => 'X-Request-Received-Time',
             'responseSentTimeHeader' => 'X-Response-Time',
             'logExceptionTrace' => false,
+            'logExtra' => [
+                'x1' => 'y1',
+                'x2' => 'y2',
+            ],
         ]))->log($request, $response, [
             'timeBeforeRequest' => 1,
             'timeAfterRespond' => 2,
             'exception' => new \Exception('error'),
+            'x2' => 'y3',
         ]);
         $expect = [
             'request' => [
@@ -105,6 +118,8 @@ class LoggerTest extends TestCase
             'exception' => [
                 'msg' => 'error',
             ],
+            'x1' => 'y1',
+            'x2' => 'y3',
         ];
         $this->assertEquals($expect, $mLogger->getLatestContext());
 
