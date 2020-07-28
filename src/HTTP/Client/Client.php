@@ -12,9 +12,29 @@ use Psr\Http\Message\ResponseInterface;
 
 class Client extends \GuzzleHttp\Client
 {
+    /**
+     * @var array 记录了最后一次请求的相关信息
+     */
+    protected array $lastRequestInfo = [
+        /** @var RequestInterface|null */
+        'request' => null,
+
+        /** @var ResponseInterface|null */
+        'response' => null,
+
+        /** @var \Throwable|null */
+        'exception' => null,
+
+        /** @var float 发送请求前的时间戳(带小数表示毫微纳秒) */
+        'timeBeforeRequest' => 0,
+
+        /** @var float 收到响应后的时间戳(带小数表示毫微纳秒) */
+        'timeAfterRespond' => 0,
+    ];
+
     private ?Logger $logger;
 
-    private bool $registeredLogging = false;
+    private bool $middlewareRegistered = false;
 
     public function __construct(array $config = [], Logger $logger = null)
     {
@@ -25,35 +45,35 @@ class Client extends \GuzzleHttp\Client
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        $this->prepareLoggingMiddleware();
+        $this->prepareMiddleware();
 
         return parent::sendRequest($request);
     }
 
     public function sendAsync(RequestInterface $request, array $options = []): PromiseInterface
     {
-        $this->prepareLoggingMiddleware();
+        $this->prepareMiddleware();
 
         return parent::sendAsync($request, $options);
     }
 
     public function send(RequestInterface $request, array $options = []): ResponseInterface
     {
-        $this->prepareLoggingMiddleware();
+        $this->prepareMiddleware();
 
         return parent::send($request, $options);
     }
 
     public function request(string $method, $uri = '', array $options = []): ResponseInterface
     {
-        $this->prepareLoggingMiddleware();
+        $this->prepareMiddleware();
 
         return parent::request($method, $uri, $options);
     }
 
     public function requestAsync(string $method, $uri = '', array $options = []): PromiseInterface
     {
-        $this->prepareLoggingMiddleware();
+        $this->prepareMiddleware();
 
         return parent::requestAsync($method, $uri, $options);
     }
@@ -63,9 +83,9 @@ class Client extends \GuzzleHttp\Client
         $this->logger = $logger;
     }
 
-    protected function prepareLoggingMiddleware()
+    protected function prepareMiddleware()
     {
-        if ($this->registeredLogging) {
+        if ($this->middlewareRegistered) {
             return;
         }
 
@@ -78,24 +98,30 @@ class Client extends \GuzzleHttp\Client
                 /** @var PromiseInterface $promise */
                 $promise = $handler($request, $options);
                 $promise = $promise->then(function (ResponseInterface $response = null) use ($request, $timeBeforeRequest, $options) {
+                    $timeAfterRespond = microtime(true);
+                    $this->setLastRequestInfo($request, $response, null, $timeBeforeRequest, $timeAfterRespond);
+
                     if ($this->logger) {
                         $this->logger->log($request, $response, array_merge($options['loggingContext'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
-                            'timeAfterRespond' => microtime(true),
+                            'timeAfterRespond' => $timeAfterRespond,
                         ]));
                     }
 
                     return $response;
                 }, function(\Throwable $e = null) use ($request, $timeBeforeRequest, $options) {
-                    if ($this->logger) {
-                        $response = null;
-                        if ($e instanceof RequestException) {
-                            $response = $e->getResponse();
-                        }
+                    $response = null;
+                    if ($e instanceof RequestException) {
+                        $response = $e->getResponse();
+                    }
 
+                    $timeAfterRespond = microtime(true);
+                    $this->setLastRequestInfo($request, $response, $e, $timeBeforeRequest, $timeAfterRespond);
+
+                    if ($this->logger) {
                         $this->logger->log($request, $response, array_merge($options['loggingContext'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
-                            'timeAfterRespond' => microtime(true),
+                            'timeAfterRespond' => $timeAfterRespond,
                             'exception' => $e,
                         ]));
                     }
@@ -105,8 +131,29 @@ class Client extends \GuzzleHttp\Client
 
                 return $promise;
             };
-        }, 'http_request_logging');
+        }, 'http_request_info_recording');
 
-        $this->registeredLogging = true;
+        $this->middlewareRegistered = true;
+    }
+
+    /**
+     * @param RequestInterface|null $request
+     * @param ResponseInterface|null $response
+     * @param \Throwable|null $exception
+     * @param float $timeBeforeRequest
+     * @param float $timeAfterRespond
+     */
+    protected function setLastRequestInfo(
+        ?RequestInterface $request,
+        ?ResponseInterface $response,
+        ?\Throwable $exception,
+        float $timeBeforeRequest,
+        float $timeAfterRespond
+    ) {
+        $this->lastRequestInfo['request'] = $request;
+        $this->lastRequestInfo['response'] = $response;
+        $this->lastRequestInfo['exception'] = $exception;
+        $this->lastRequestInfo['timeBeforeRequest'] = $timeBeforeRequest;
+        $this->lastRequestInfo['timeAfterRespond'] = $timeAfterRespond;
     }
 }
