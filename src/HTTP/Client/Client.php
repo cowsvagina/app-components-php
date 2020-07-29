@@ -120,7 +120,7 @@ class Client extends \GuzzleHttp\Client
                     $this->setLastRequestInfo($request, $response, null, $timeBeforeRequest, $timeAfterRespond);
 
                     if ($this->logger) {
-                        $this->logger->log($request, $response, array_merge($this->options['logExtra'] ?? [], [
+                        $this->logger->log($request, $response, array_merge($this->options['logExtra'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => $timeAfterRespond,
                         ]));
@@ -137,7 +137,7 @@ class Client extends \GuzzleHttp\Client
                     $this->setLastRequestInfo($request, $response, $e, $timeBeforeRequest, $timeAfterRespond);
 
                     if ($this->logger) {
-                        $this->logger->log($request, $response, array_merge($this->options['logExtra'] ?? [], [
+                        $this->logger->log($request, $response, array_merge($this->options['logExtra'], [
                             'timeBeforeRequest' => $timeBeforeRequest,
                             'timeAfterRespond' => $timeAfterRespond,
                             'exception' => $e,
