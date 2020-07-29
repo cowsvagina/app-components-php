@@ -36,6 +36,7 @@ class Client extends \GuzzleHttp\Client
 
     private array $options = [
         'recordingMiddlewareName' => 'http_request_info_recording',
+        'logExtra' => [],
     ];
 
     private bool $middlewareRegistered = false;
