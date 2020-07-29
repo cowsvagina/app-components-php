@@ -63,6 +63,7 @@ class Client extends \GuzzleHttp\Client
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
+        $this->setLastRequestInfo($request);
         $this->prepareMiddleware();
 
         return parent::sendRequest($request);
@@ -70,6 +71,7 @@ class Client extends \GuzzleHttp\Client
 
     public function sendAsync(RequestInterface $request, array $options = []): PromiseInterface
     {
+        $this->setLastRequestInfo($request);
         $this->prepareMiddleware();
 
         return parent::sendAsync($request, $options);
@@ -77,6 +79,7 @@ class Client extends \GuzzleHttp\Client
 
     public function send(RequestInterface $request, array $options = []): ResponseInterface
     {
+        $this->setLastRequestInfo($request);
         $this->prepareMiddleware();
 
         return parent::send($request, $options);
@@ -84,6 +87,7 @@ class Client extends \GuzzleHttp\Client
 
     public function request(string $method, $uri = '', array $options = []): ResponseInterface
     {
+        $this->resetLastRequestInfo();
         $this->prepareMiddleware();
 
         return parent::request($method, $uri, $options);
@@ -91,6 +95,7 @@ class Client extends \GuzzleHttp\Client
 
     public function requestAsync(string $method, $uri = '', array $options = []): PromiseInterface
     {
+        $this->resetLastRequestInfo();
         $this->prepareMiddleware();
 
         return parent::requestAsync($method, $uri, $options);
@@ -154,6 +159,11 @@ class Client extends \GuzzleHttp\Client
         $this->middlewareRegistered = true;
     }
 
+    protected function resetLastRequestInfo()
+    {
+        $this->setLastRequestInfo();
+    }
+
     /**
      * @param RequestInterface|null $request
      * @param ResponseInterface|null $response
@@ -162,11 +172,11 @@ class Client extends \GuzzleHttp\Client
      * @param float $timeAfterRespond
      */
     protected function setLastRequestInfo(
-        ?RequestInterface $request,
-        ?ResponseInterface $response,
-        ?\Throwable $exception,
-        float $timeBeforeRequest,
-        float $timeAfterRespond
+        ?RequestInterface $request = null,
+        ?ResponseInterface $response = null,
+        ?\Throwable $exception = null,
+        float $timeBeforeRequest = 0,
+        float $timeAfterRespond = 0
     ) {
         $this->lastRequestInfo['request'] = $request;
         $this->lastRequestInfo['response'] = $response;
