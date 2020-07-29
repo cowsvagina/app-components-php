@@ -82,8 +82,8 @@ class LoggerTest extends TestCase
                 'x2' => 'y2',
             ],
         ]))->log($request, $response, [
-            'timeBeforeRequest' => 1,
-            'timeAfterRespond' => 2,
+            'timeBeforeRequest' => 1.1,
+            'timeAfterRespond' => 2.3,
             'exception' => new \Exception('error'),
             'x2' => 'y3',
         ]);
@@ -116,9 +116,9 @@ class LoggerTest extends TestCase
                 'body' => '{"abc":"123"}',
             ],
             'costs' => [
-                'total' => 1,
-                'upstream' => 0.5,
-                'downstream' => 0.3,
+                'total' => 1.2,
+                'upstream' => 0.4,
+                'downstream' => 0.6,
             ],
             'exception' => [
                 'msg' => 'error',

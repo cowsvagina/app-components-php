@@ -190,8 +190,8 @@ class Logger
     protected function extractCosts(?ResponseInterface $response, array &$extra): array
     {
         $costs = [];
-        $timeBeforeRequest = intval($extra['timeBeforeRequest'] ?? 0);
-        $timeAfterRespond = intval($extra['timeAfterRespond'] ?? 0);
+        $timeBeforeRequest = floatval($extra['timeBeforeRequest'] ?? 0);
+        $timeAfterRespond = floatval($extra['timeAfterRespond'] ?? 0);
 
         if ($timeAfterRespond > 0 && $timeBeforeRequest > 0) {
             $costs['total'] = $timeAfterRespond - $timeBeforeRequest;
@@ -205,7 +205,7 @@ class Logger
         if ($this->options['requestRecvTimeHeader']) {
             $requestReceivedTime = $response->getHeaderLine($this->options['requestRecvTimeHeader']);
             if ($timeBeforeRequest > 0 && is_numeric($requestReceivedTime)) {
-                $costs['upstream'] = (intval($requestReceivedTime) / 1000) - (intval($timeBeforeRequest * 1000) / 1000);
+                $costs['upstream'] = ($requestReceivedTime / 1000) - $timeBeforeRequest;
             }
         }
 
@@ -213,7 +213,7 @@ class Logger
         if ($this->options['responseSentTimeHeader']) {
             $responseSentTime = $response->getHeaderLine($this->options['responseSentTimeHeader']);
             if ($timeAfterRespond > 0 && is_numeric($responseSentTime)) {
-                $costs['downstream'] = (intval($timeAfterRespond * 1000) / 1000) - intval($responseSentTime) / 1000;
+                $costs['downstream'] = $timeAfterRespond - ($responseSentTime / 1000);
             }
         }
 
