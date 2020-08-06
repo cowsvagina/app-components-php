@@ -9,13 +9,14 @@ class Helper
     /**
      * 抄自GuzzleHTTP parse_query.
      *
-     * 调整了空值策略,用空字符串取代null
+     * 调整了空值策略,用空字符串取代null.
      *
-     * @param $str
-     * @param bool $urlEncoding
+     * @param string $str
+     * @param bool|string $urlEncoding
+     *
      * @return array
      */
-    public static function parseQuery($str, $urlEncoding = true)
+    public static function parseQuery(string $str, $urlEncoding = true): array
     {
         $result = [];
 
