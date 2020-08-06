@@ -3,5 +3,8 @@
         <testsuite name="HTTP">
             <directory>tests/HTTP</directory>
         </testsuite>
+        <testsuite name="Logging">
+            <directory>tests/Logging</directory>
+        </testsuite>
     </testsuites>
 </phpunit>
