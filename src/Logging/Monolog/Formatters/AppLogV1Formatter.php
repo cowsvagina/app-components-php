@@ -125,9 +125,6 @@ class AppLogV1Formatter implements FormatterInterface
         ];
 
         $options = JSON_UNESCAPED_SLASHES;
-
-        // 不使用JSON_UNESCAPED_UNICODE
-        // syslog写入到kafka时，有emoji字符时会导致数据丢失
         $raw = json_encode($data, $options);
         if ($raw === false) {
             $data['ctx'] = [
