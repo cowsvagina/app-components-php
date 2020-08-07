@@ -18,6 +18,8 @@ class Logger
     private array $options = [
         'message' => 'http_client_request',             // 日志message的值
         'failingLogMsg' => 'http_client_failing_log',   // 提取日志信息出错时的补充日志message
+        'logRuntimeInfo' => false,                      // 是否记录运行时信息(包括程序语言,版本,SAPI等)
+        'logOSInfo' => false,                           // 是否记录操作系统信息(包括hostname等)
         'logRequestHeaders' => false,                   // 是否记录请求header
         'logResponseHeaders' => false,                  // 是否记录响应header
         'logExceptionTrace' => false,                   // 是否记录异常trace
@@ -258,6 +260,19 @@ class Logger
         }
 
         return $body;
+    }
+
+    protected function extraRuntimeInfo(): ?array
+    {
+        if (!$this->options['logRuntimeInfo']) {
+            return null;
+        }
+
+        return [
+            'lang' => 'PHP-'.phpversion(),
+            'sapi' => php_sapi_name(),
+            'memoryUsage' => memory_get_usage()
+        ];
     }
 
     protected function getHeaders(MessageInterface $r): array
