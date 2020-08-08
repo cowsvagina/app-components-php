@@ -39,9 +39,40 @@ class AppLogV1FormatterTest extends TestCase
         ];
         $this->assertEquals(json_encode($expect)."\n", $actual);
 
-        $record['context']['hi'] = 'yes';
+        // 测试record['extra']中的信息增加到context中,并且不应该覆盖同名字段
+        $now = new \DateTime();
+        $record = [
+            'message' => 'test',
+            'context' => [
+                'hi' => 'yes',
+                'info' => 123,      // info 不会被extra中的同名字段覆盖
+            ],
+            'level' => 200,
+            'level_name' => 'INFO',    // level_name错误
+            'channel' => 'test',
+            'datetime' => $now,
+            'extra' => [
+                'abc' => 'def',
+                'info' => [
+                    'test' => 'test1',
+                ],
+            ],
+        ];
         $actual = $formatter->format($record);
-        $expect['ctx'] = ['hi' => 'yes'];
+        $expect = [
+            'schema' => AppLogV1Formatter::SCHEMA,
+            't' => $now->format('c'),
+            'l' => 'info',
+            's' => $this->service,
+            'c' => 'test',
+            'e' => $this->env,
+            'm' => $record['message'],
+            'ctx' => [
+                'abc' => 'def',
+                'info' => 123,
+                'hi' => 'yes',
+            ],
+        ];
         $this->assertEquals(json_encode($expect)."\n", $actual);
     }
 

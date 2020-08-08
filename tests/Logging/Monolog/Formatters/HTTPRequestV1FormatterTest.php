@@ -55,25 +55,95 @@ class HTTPRequestV1FormatterTest extends TestCase
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
 
 
-        // 测试额外字段
-        $record['context']['haha'] = 'gaga';
+        // 测试record['extra']中的信息增加到context中,并且不应该覆盖同名字段
+        $now = new \DateTime();
+        $req = (new ServerRequest('POST', '/test', [
+            'content-type' => 'application/x-www-form-urlencoded',
+        ]))->withQueryParams(['q1' => '1', 'q2' => '2'])->withParsedBody(['q3' => '3', 'q4' => '4']);
+        $record = [
+            'message' => 'test',
+            'context' => [
+                HTTPRequestV1Formatter::KEY_REQUEST => $req,
+                HTTPRequestV1Formatter::KEY_USER => 'userID',
+                HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
+                HTTPRequestV1Formatter::KEY_RUNTIME => 100,
+                'haha' => 'gaga',
+                'extra1' => 'e1',       // 这个字段不会被extra中的同名字段覆盖
+            ],
+            'level' => 200,
+            'level_name' => 'INFO',
+            'channel' => 'test',
+            'datetime' => $now,
+            'extra' => [
+                'extra1' => 'v1',
+                'extra2' => 'v2',       // 这个字段应该合并到context中
+            ],
+        ];
         $actual = $formatter->format($record);
-        $expect['context'] = [
-            'haha' => 'gaga',
-            'ip' => '1.1.1.1',
-            'user' => 'userID',
-            'runtime' => 100,
+        $expect = [
+            'schema' => 'http.request.v1',
+            'service' => $this->service,
+            'environment' => $this->env,
+            'time' => $now->format('Y-m-d\TH:i:s.uP'),
+            'method' => 'POST',
+            'path' => '/test',
+            'headers' => ['content-type' => 'application/x-www-form-urlencoded'],
+            'get' => ['q1' => '1', 'q2' => '2'],
+            'post' => ['q3' => '3', 'q4' => '4'],
+            'context' => [
+                'extra1' => 'e1',
+                'extra2' => 'v2',
+                'haha' => 'gaga',
+                'ip' => '1.1.1.1',
+                'user' => 'userID',
+                'runtime' => 100,
+            ],
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
 
 
         // 测试header黑白名单
+        $formatter = new HTTPRequestV1Formatter($this->service, $this->env);
         $formatter->setHeadersWhitelist(['content-type', 'white1', 'white2']);
         $formatter->setHeadersBlacklist(['white2']);    // white2 被归入黑名单,在输出日志的时候就不应该包含这个header
-        $req = $req->withHeader('white1', 'v1')->withHeader('white2', 'v2')->withHeader('white3', 'v3');
-        $record['context'][HTTPRequestV1Formatter::KEY_REQUEST] = $req;
+        $now = new \DateTime();
+        $req = (new ServerRequest('POST', '/test', [
+            'content-type' => 'application/x-www-form-urlencoded',
+            'white1' => 'v1',
+            'white2' => 'v2',
+            'white3' => 'v3',
+        ]))->withQueryParams(['q1' => '1', 'q2' => '2'])->withParsedBody(['q3' => '3', 'q4' => '4']);
+        $record = [
+            'message' => 'test',
+            'context' => [
+                HTTPRequestV1Formatter::KEY_REQUEST => $req,
+                HTTPRequestV1Formatter::KEY_USER => 'userID',
+                HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
+                HTTPRequestV1Formatter::KEY_RUNTIME => 100,
+            ],
+            'level' => 200,
+            'level_name' => 'INFO',
+            'channel' => 'test',
+            'datetime' => $now,
+            'extra' => [],
+        ];
         $actual = $formatter->format($record);
-        $expect['headers'] = ['content-type' => 'application/x-www-form-urlencoded', 'white1' => 'v1'];
+        $expect = [
+            'schema' => 'http.request.v1',
+            'service' => $this->service,
+            'environment' => $this->env,
+            'time' => $now->format('Y-m-d\TH:i:s.uP'),
+            'method' => 'POST',
+            'path' => '/test',
+            'headers' => ['content-type' => 'application/x-www-form-urlencoded', 'white1' => 'v1'],
+            'get' => ['q1' => '1', 'q2' => '2'],
+            'post' => ['q3' => '3', 'q4' => '4'],
+            'context' => [
+                'ip' => '1.1.1.1',
+                'user' => 'userID',
+                'runtime' => 100,
+            ],
+        ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
     }
 
