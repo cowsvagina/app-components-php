@@ -26,6 +26,20 @@ class RuntimeInfoProcessor implements ProcessorInterface
         $this->options = array_merge($this->options, $options);
     }
 
+    /**
+     * 包含以下字段:
+     *  [
+     *      'lang': (string),           // 程序语言及版本, 是否存在由 withLanguage 选项决定
+     *      'sapi': (string),           // SAPI名称, 是否存在由 withSAPI 选项决定
+     *      'pid': (int),               // 进程id, 是否存在由 withPID 选项决定
+     *      'memoryUsage': (int),       // 当前内存使用情况(字节), 是否存在由 withMemoryUsage 选项决定
+     *      'memoryPeakUsage': (int),   // 内存使用峰值(字节), 是否存在由 withMemoryUsage 选项决定
+     *  ]
+     *
+     * @param array $records
+     *
+     * @return array
+     */
     public function __invoke(array $records)
     {
         $fieldName = $this->options['fieldName'];
