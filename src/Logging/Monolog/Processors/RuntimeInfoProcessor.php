@@ -39,7 +39,7 @@ class RuntimeInfoProcessor implements ProcessorInterface
      *      'memoryPeakUsage': (int),   // 内存使用峰值(字节), 是否存在由 withMemoryUsage 选项决定
      *  ]
      *
-     * @param array $records
+     * @param array $records 符合monolog record结构, 参见: https://github.com/Seldaek/monolog/blob/master/doc/message-structure.md
      *
      * @return array
      */
