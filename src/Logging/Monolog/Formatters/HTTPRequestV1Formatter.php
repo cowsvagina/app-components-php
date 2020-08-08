@@ -169,6 +169,8 @@ class HTTPRequestV1Formatter implements FormatterInterface
             }
         }
 
+        $data['context'] = array_merge($record['extra'], $data['context']);
+
         if (empty($data['context'])) {
             $data['context'] = $emptyObj;
         }

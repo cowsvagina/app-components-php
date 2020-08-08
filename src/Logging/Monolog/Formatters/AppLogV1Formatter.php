@@ -58,16 +58,7 @@ class AppLogV1Formatter implements FormatterInterface
      *
      * {@inheritdoc}
      *
-     * @param array $record
-     *      [
-     *          'message' => (string) $message,
-     *          'context' => $context,
-     *          'level' => $level,
-     *          'level_name' => $levelName,
-     *          'channel' => $this->name,
-     *          'datetime' => $ts,
-     *          'extra' => array(),
-     *      ]
+     * @param array $record 包含字段参见 https://github.com/Seldaek/monolog/blob/master/doc/message-structure.md
      *
      * @return string json string of array
      *      [
@@ -113,6 +104,7 @@ class AppLogV1Formatter implements FormatterInterface
             $dt = new \DateTime();
         }
 
+        $context = array_merge($record['extra'], $context);
         $data = [
             'schema' => self::SCHEMA,
             't' => $dt->format('c'),
@@ -133,7 +125,7 @@ class AppLogV1Formatter implements FormatterInterface
                 ],
             ];
 
-            return json_encode($data, $options) . "\n";
+            return json_encode($data, $options)."\n";
         }
 
         return "{$raw}\n";
