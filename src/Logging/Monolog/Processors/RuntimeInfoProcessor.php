@@ -11,6 +11,9 @@ use Monolog\Processor\ProcessorInterface;
  */
 class RuntimeInfoProcessor implements ProcessorInterface
 {
+    /**
+     * @var array processor 处理选项
+     */
     private array $options = [
         'fieldName' => 'runtimeInfo',           // extra中保存信息的字段名
         'withLanguage' => true,                 // 是否记录程序语言及版本信息
