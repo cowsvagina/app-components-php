@@ -32,7 +32,7 @@ class HostnameProcessor implements ProcessorInterface
     {
         $fieldName = $this->options['fieldName'];
         if ($hostname = gethostname()) {
-            $records['extra'][$fieldName]['hostname'] = $hostname;
+            $records['extra'][$fieldName] = $hostname;
         }
 
         return $records;
