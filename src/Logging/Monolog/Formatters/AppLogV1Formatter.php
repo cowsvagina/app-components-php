@@ -107,7 +107,7 @@ class AppLogV1Formatter implements FormatterInterface
         $context = array_merge($record['extra'], $context);
         $data = [
             'schema' => self::SCHEMA,
-            't' => $dt->format('c'),
+            't' => $dt->format('Y-m-d\TH:i:s.uP'),
             'l' => $l,
             's' => $this->service,
             'c' => $record['channel'],
