@@ -29,7 +29,7 @@ class AppLogV1FormatterTest extends TestCase
         $actual = $formatter->format($record);
         $expect = [
             'schema' => AppLogV1Formatter::SCHEMA,
-            't' => $now->format('c'),
+            't' => $now->format('Y-m-d\TH:i:s.uP'),
             'l' => 'info',
             's' => $this->service,
             'c' => 'test',
@@ -61,7 +61,7 @@ class AppLogV1FormatterTest extends TestCase
         $actual = $formatter->format($record);
         $expect = [
             'schema' => AppLogV1Formatter::SCHEMA,
-            't' => $now->format('c'),
+            't' => $now->format('Y-m-d\TH:i:s.uP'),
             'l' => 'info',
             's' => $this->service,
             'c' => 'test',
@@ -96,7 +96,7 @@ class AppLogV1FormatterTest extends TestCase
         $actual = $formatter->format($record);
         $expect = [
             'schema' => AppLogV1Formatter::SCHEMA,
-            't' => $now->format('c'),
+            't' => $now->format('Y-m-d\TH:i:s.uP'),
             'l' => 'warning',
             's' => $this->service,
             'c' => 'test',
@@ -134,7 +134,7 @@ class AppLogV1FormatterTest extends TestCase
         $actual = $formatter->format($record);
         $expect = [
             'schema' => AppLogV1Formatter::SCHEMA,
-            't' => $now->format('c'),
+            't' => $now->format('Y-m-d\TH:i:s.uP'),
             'l' => 'info',
             's' => $this->service,
             'c' => 'test',
