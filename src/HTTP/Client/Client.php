@@ -61,14 +61,6 @@ class Client extends \GuzzleHttp\Client
         }
     }
 
-    public function sendRequest(RequestInterface $request): ResponseInterface
-    {
-        $this->setLastRequestInfo($request);
-        $this->prepareMiddleware();
-
-        return parent::sendRequest($request);
-    }
-
     public function sendAsync(RequestInterface $request, array $options = []): PromiseInterface
     {
         $this->setLastRequestInfo($request);
@@ -85,7 +77,7 @@ class Client extends \GuzzleHttp\Client
         return parent::send($request, $options);
     }
 
-    public function request(string $method, $uri = '', array $options = []): ResponseInterface
+    public function request($method, $uri = '', array $options = []): ResponseInterface
     {
         $this->resetLastRequestInfo();
         $this->prepareMiddleware();
@@ -93,7 +85,7 @@ class Client extends \GuzzleHttp\Client
         return parent::request($method, $uri, $options);
     }
 
-    public function requestAsync(string $method, $uri = '', array $options = []): PromiseInterface
+    public function requestAsync($method, $uri = '', array $options = []): PromiseInterface
     {
         $this->resetLastRequestInfo();
         $this->prepareMiddleware();
