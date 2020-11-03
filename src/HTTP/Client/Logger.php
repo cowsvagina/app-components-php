@@ -16,10 +16,8 @@ class Logger
     private LoggerInterface $logger;
 
     private array $options = [
-        'message' => 'http_client_request',             // 日志message的值
-        'failingLogMsg' => 'http_client_failing_log',   // 提取日志信息出错时的补充日志message
-        'logRuntimeInfo' => false,                      // 是否记录运行时信息(包括程序语言,版本,SAPI等)
-        'logOSInfo' => false,                           // 是否记录操作系统信息(包括hostname等)
+        'message' => 'http_request',                    // 日志message的值
+        'failingLogMsg' => 'failing_log_http_request',  // 提取日志信息出错时的补充日志message
         'logRequestHeaders' => false,                   // 是否记录请求header
         'logResponseHeaders' => false,                  // 是否记录响应header
         'logExceptionTrace' => false,                   // 是否记录异常trace
@@ -31,8 +29,6 @@ class Logger
                                                         //      'application/x-www-form-urlencoded',
                                                         //  ],
         'logResponseBodyTypes' => [],                   // 指定哪些类型的响应体内容需要被记录下来, 匹配方式同上
-        'requestRecvTimeHeader' => '',                  // 响应中的header名,该header记录了远端<收到>请求时的毫秒时间戳,用于粗算网络上行耗时,该header的值必须为毫秒时间戳
-        'responseSentTimeHeader' => '',                 // 响应中的header名,该header记录了远端<发送>响应时的毫秒时间戳,用于粗算网络下行耗时,该header的值必须为毫秒时间戳
         'logExtra' => [],                               // 该字段允许预设一些信息,在每一次调用log方法时,这些都会成为extra信息中的一部分,它们可以被log方法的$extra参数中的信息覆盖
     ];
 
@@ -59,6 +55,11 @@ class Logger
      */
     public function log(RequestInterface $request, ?ResponseInterface $response, array $extra = [])
     {
+        $timeBeforeRequest = floatval($extra['timeBeforeRequest'] ?? 0);
+        $timeAfterRespond = floatval($extra['timeAfterRespond'] ?? 0);
+        $exception = $extra['exception'] ?? null;
+
+        unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
         try {
             $logContext = [
                 'request' => $this->extraRequestInfo($request),
@@ -68,17 +69,14 @@ class Logger
                 $logContext['response'] = $this->extractResponseInfo($response);
             }
 
-            // 提取耗时信息
-            if ($costs = $this->extractCosts($response, $extra)) {
-                $logContext['costs'] = $costs;
+            if ($duration = $this->calcDuration($timeBeforeRequest, $timeAfterRespond)) {
+                $logContext['duration'] = $duration;
             }
 
-            $exception = $extra['exception'] ?? null;
             if (!($exception instanceof \Throwable)) {
                 $exception = null;
             }
 
-            unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
             $extra = array_merge($this->options['logExtra'], $extra);
 
             // 提取错误中的curl信息
@@ -100,7 +98,6 @@ class Logger
                 $logLevel = 'warning';
             }
         } catch (\Throwable $exception) {
-            unset($extra['timeBeforeRequest'], $extra['timeAfterRespond'], $extra['exception']);
             $extra = array_merge($this->options['logExtra'], $extra);
             $this->logger->error($this->options['failingLogMsg'], array_merge($extra, [
                 'error' => [
@@ -189,37 +186,13 @@ class Logger
         return $info;
     }
 
-    protected function extractCosts(?ResponseInterface $response, array &$extra): array
+    protected function calcDuration(float $timeBeforeRequest, float $timeAfterRespond): ?float
     {
-        $costs = [];
-        $timeBeforeRequest = floatval($extra['timeBeforeRequest'] ?? 0);
-        $timeAfterRespond = floatval($extra['timeAfterRespond'] ?? 0);
-
         if ($timeAfterRespond > 0 && $timeBeforeRequest > 0) {
-            $costs['total'] = $timeAfterRespond - $timeBeforeRequest;
+            return $timeAfterRespond - $timeBeforeRequest;
         }
 
-        if (!$response) {
-            return $costs;
-        }
-
-        // 上行网络耗时
-        if ($this->options['requestRecvTimeHeader']) {
-            $requestReceivedTime = $response->getHeaderLine($this->options['requestRecvTimeHeader']);
-            if ($timeBeforeRequest > 0 && is_numeric($requestReceivedTime)) {
-                $costs['upstream'] = ($requestReceivedTime / 1000) - $timeBeforeRequest;
-            }
-        }
-
-        // 下行网络耗时
-        if ($this->options['responseSentTimeHeader']) {
-            $responseSentTime = $response->getHeaderLine($this->options['responseSentTimeHeader']);
-            if ($timeAfterRespond > 0 && is_numeric($responseSentTime)) {
-                $costs['downstream'] = $timeAfterRespond - ($responseSentTime / 1000);
-            }
-        }
-
-        return $costs;
+        return 0;
     }
 
     protected function extractRequestBody(MessageInterface $r): array
@@ -260,19 +233,6 @@ class Logger
         }
 
         return $body;
-    }
-
-    protected function extraRuntimeInfo(): ?array
-    {
-        if (!$this->options['logRuntimeInfo']) {
-            return null;
-        }
-
-        return [
-            'lang' => 'PHP-'.phpversion(),
-            'sapi' => php_sapi_name(),
-            'memoryUsage' => memory_get_usage()
-        ];
     }
 
     protected function getHeaders(MessageInterface $r): array
