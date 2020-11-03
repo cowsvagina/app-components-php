@@ -24,20 +24,6 @@ class RequestLogger
     private array $config = [
         'logMsg' => '',
 
-        // 获取errno值的header名
-        // 空字符串代表不记录
-        // 日志中字段名固定为errno
-        'errnoHeader' => '',
-
-        // 获取请求执行耗时的header名(值的单位应该是毫秒)
-        // 空字符串代表不记录
-        // 日志中字段名固定为executionTime
-        'executionTimeHeader' => '',
-
-        // 如果客户端发送请求时在header中携带了发送时的时间戳,这个字段用来指定header名
-        // 这个header中的值强制要求为毫秒时间戳
-        'requestSentTimeHeader' => '',
-
         // 记录响应的配置
         'response' => [
             'logHeaders' => false,
@@ -70,8 +56,9 @@ class RequestLogger
      * @param RequestInterface $request
      * @param ResponseInterface $response
      * @param array $extra 自定义信息, 有一些预订字段,有特殊入用途,如下:
-     *                         userID: (integer/string) 用户ID
-     *                         requestReceivedTime: (integer) 收到请求时的毫秒时间戳,该字段跟requestSentTimeHeader配置的header值一起用于计算客户端上行网络耗时
+     *                          user: (integer/string) 用户ID
+     *                          errno: (integer) 错误码
+     *                          execTime: (integer) 接口执行时间 (毫秒)
      *                     调用者应该尽可能保证每一次记录日志相同字段的数据类型始终保持一致,否则可能造成无法写入到ES的问题从而丢失日志
      */
     public function log(RequestInterface $request, ResponseInterface $response, array $extra = [])
@@ -79,37 +66,21 @@ class RequestLogger
         $context = [
             HTTPRequestV1Formatter::KEY_REQUEST => $request,
             HTTPRequestV1Formatter::KEY_IP => $this->getRealIP($request),
-            HTTPRequestV1Formatter::KEY_USER => strval($extra['userID'] ?? ''),
+            HTTPRequestV1Formatter::KEY_USER_ID => strval($extra['userID'] ?? ''),
             'response' => $this->getResponseInfo($response),
         ];
 
-        if ($this->config['errnoHeader']) {
-            $context['errno'] = intval($response->getHeaderLine($this->config['errnoHeader']) ?: 0);
-        } else if (isset($context['errno'])) {
+        if (isset($extra['errno'])) {
             // errno是一个预定义字段,专门表达错误码,所以这里如果是调用方传入的,会确保它的类型是正确的.
-            $context['errno'] = intval($context['errno']);
+            $extra['errno'] = intval($extra['errno']);
         }
 
-        if ($this->config['executionTimeHeader']) {
-            $context['executionTime'] = intval($response->getHeaderLine($this->config['executionTimeHeader']) ?: 0);
-        } else if (isset($context['executionTime'])) {
-            // executionTime是一个预定义字段,专门表达执行时间(毫秒),所以这里如果是调用方传入的,会确保它的类型是正确的.
-            $context['executionTime'] = intval($context['executionTime']);
+        if (isset($extra['execTime'])) {
+            // execTime是一个预定义字段,专门表达执行时间(毫秒),所以这里如果是调用方传入的,会确保它的类型是正确的.
+            $extra['execTime'] = intval($extra['execTime']);
         }
 
-        if ($this->config['requestSentTimeHeader'] && isset($extra['requestReceivedTime'])) {
-            $sentTime = $request->getHeaderLine($this->config['requestSentTimeHeader']);
-            $sentTime = $sentTime ? intval($sentTime) : $sentTime;
-
-            if ($sentTime && $extra['requestReceivedTime']) {
-                // upstreamCost是一个预定义字段,专门表达请求上行的网络耗时(毫秒)
-                // 它根据请求体header中的携带的请求时间戳与收到请求时记录的时间戳做差值得到
-                // 所以它的准确性严重依赖客户端和服务器端给出的时间的准确性
-                $context['upstreamCost'] = intval($extra['requestReceivedTime']) - $sentTime;
-            }
-        }
-
-        unset($extra['userID'], $extra['requestReceivedTime']);
+        unset($extra['userID']);
 
         $this->logger->info($this->config['logMsg'], array_merge($extra, $context));
     }
@@ -157,6 +128,6 @@ class RequestLogger
             return $xrip;
         }
 
-        return $_SERVER['REMOTE_ADDR'] ?? '';
+        return '';
     }
 }

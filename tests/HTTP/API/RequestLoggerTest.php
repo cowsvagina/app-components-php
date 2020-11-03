@@ -26,7 +26,6 @@ class RequestLoggerTest extends TestCase
                 'logBody' => false,
             ],
         ]);
-        $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
         $request = new Request("GET", '/');
         $response = new Response(200, [
             'x-runtime' => 200,
@@ -35,8 +34,8 @@ class RequestLoggerTest extends TestCase
         $reqLogger->log($request, $response, ['userID' => 1]);
         $this->assertSame([
             HTTPRequestV1Formatter::KEY_REQUEST => $request,
-            HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
-            HTTPRequestV1Formatter::KEY_USER => '1',
+            HTTPRequestV1Formatter::KEY_IP => '',
+            HTTPRequestV1Formatter::KEY_USER_ID => '1',
             'response' => [
                 'status' => 200,
             ],
@@ -59,41 +58,33 @@ class RequestLoggerTest extends TestCase
             'cli-sent-time' => 100,
         ]);
         $response = new Response(200, [
-            'x-runtime' => '300ms',
-            'x-errno' => '500',
             'content-type' => 'application/json',
         ], '{"data":"1"}');
         $reqLogger->log($request, $response, [
             'userID' => 1,
-            'requestReceivedTime' => 110,
             'hello' => 'yes',
             'errno' => new class{},     // 会被header中的值覆盖
+            'execTime' => 300,
         ]);
         $this->assertSame([
             'hello' => 'yes',
-            'errno' => 500,
+            'errno' => 1,
+            'execTime' => 300,
             HTTPRequestV1Formatter::KEY_REQUEST => $request,
             HTTPRequestV1Formatter::KEY_IP => '2.2.2.2',
-            HTTPRequestV1Formatter::KEY_USER => '1',
+            HTTPRequestV1Formatter::KEY_USER_ID => '1',
             'response' => [
                 'status' => 200,
                 'headers' => [
-                    'x-runtime' => '300ms',
-                    'x-errno' => '500',
                     'content-type' => 'application/json',
                 ],
                 'body' => '{"data":"1"}'
             ],
-            'executionTime' => 300,
-            'upstreamCost' => 10,
         ], $logger->getLatestContext());
 
         /////////////////
 
         $reqLogger = new RequestLogger($logger, [
-            'logRealIP' => true,
-            'errnoHeader' => 'x-errno',
-            'executionTimeHeader' => 'x-runtime',
             'response' => [
                 'logHeaders' => true,
                 'logBody' => true,
@@ -103,31 +94,28 @@ class RequestLoggerTest extends TestCase
             'x-real-ip' => '9.9.9.9',
         ]);
         $response = new Response(200, [
-            'x-runtime' => '300ms',
-            'x-errno' => '500',
             'content-type' => 'application/json',
         ], '{"data":"1"}');
         $reqLogger->log($request, $response, [
             'userID' => 1,
             'hello' => 'yes',
             'errno' => new class{},     // 会被header中的值覆盖
+            'execTime' => '300ms',
         ]);
         $this->assertSame([
             'hello' => 'yes',
-            'errno' => 500,
+            'errno' => 1,
+            'execTime' => 300,
             HTTPRequestV1Formatter::KEY_REQUEST => $request,
             HTTPRequestV1Formatter::KEY_IP => '9.9.9.9',
-            HTTPRequestV1Formatter::KEY_USER => '1',
+            HTTPRequestV1Formatter::KEY_USER_ID => '1',
             'response' => [
                 'status' => 200,
                 'headers' => [
-                    'x-runtime' => '300ms',
-                    'x-errno' => '500',
                     'content-type' => 'application/json',
                 ],
                 'body' => '{"data":"1"}'
             ],
-            'executionTime' => 300,
         ], $logger->getLatestContext());
     }
 }
