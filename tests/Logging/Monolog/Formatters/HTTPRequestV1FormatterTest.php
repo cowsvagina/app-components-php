@@ -25,9 +25,8 @@ class HTTPRequestV1FormatterTest extends TestCase
             'message' => 'test',
             'context' => [
                 HTTPRequestV1Formatter::KEY_REQUEST => $req,
-                HTTPRequestV1Formatter::KEY_USER => 'userID',
+                HTTPRequestV1Formatter::KEY_USER_ID => 'userID',
                 HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
-                HTTPRequestV1Formatter::KEY_RUNTIME => 100,
             ],
             'level' => 200,
             'level_name' => 'INFO',
@@ -48,8 +47,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'post' => ['q3' => '3', 'q4' => '4'],
             'context' => [
                 'ip' => '1.1.1.1',
-                'user' => 'userID',
-                'runtime' => 100,
+                'userID' => 'userID',
             ],
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
@@ -64,9 +62,8 @@ class HTTPRequestV1FormatterTest extends TestCase
             'message' => 'test',
             'context' => [
                 HTTPRequestV1Formatter::KEY_REQUEST => $req,
-                HTTPRequestV1Formatter::KEY_USER => 'userID',
+                HTTPRequestV1Formatter::KEY_USER_ID => 'userID',
                 HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
-                HTTPRequestV1Formatter::KEY_RUNTIME => 100,
                 'haha' => 'gaga',
                 'extra1' => 'e1',       // 这个字段不会被extra中的同名字段覆盖
             ],
@@ -95,8 +92,7 @@ class HTTPRequestV1FormatterTest extends TestCase
                 'extra2' => 'v2',
                 'haha' => 'gaga',
                 'ip' => '1.1.1.1',
-                'user' => 'userID',
-                'runtime' => 100,
+                'userID' => 'userID',
             ],
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
@@ -117,9 +113,8 @@ class HTTPRequestV1FormatterTest extends TestCase
             'message' => 'test',
             'context' => [
                 HTTPRequestV1Formatter::KEY_REQUEST => $req,
-                HTTPRequestV1Formatter::KEY_USER => 'userID',
+                HTTPRequestV1Formatter::KEY_USER_ID => 'userID',
                 HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
-                HTTPRequestV1Formatter::KEY_RUNTIME => 100,
             ],
             'level' => 200,
             'level_name' => 'INFO',
@@ -140,8 +135,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'post' => ['q3' => '3', 'q4' => '4'],
             'context' => [
                 'ip' => '1.1.1.1',
-                'user' => 'userID',
-                'runtime' => 100,
+                'userID' => 'userID',
             ],
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
@@ -205,7 +199,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'message' => 'test',
             'context' => [
                 HTTPRequestV1Formatter::KEY_REQUEST => new ServerRequest('GET', '/test'),
-                HTTPRequestV1Formatter::KEY_USER => [],
+                HTTPRequestV1Formatter::KEY_USER_ID => [],
                 HTTPRequestV1Formatter::KEY_IP => '1.1.1.1',
             ],
             'level' => 200,
@@ -229,7 +223,7 @@ class HTTPRequestV1FormatterTest extends TestCase
                 'ip' => '1.1.1.1',
                 'ctxErr' => [
                     [
-                        'msg' => 'invalid type of user field',
+                        'msg' => 'invalid type of user id field',
                         'type' => 'array',
                     ],
                 ],
@@ -238,7 +232,7 @@ class HTTPRequestV1FormatterTest extends TestCase
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
 
-        $record['context'][HTTPRequestV1Formatter::KEY_USER] = new HTTPRequestV1FormatterTest();
+        $record['context'][HTTPRequestV1Formatter::KEY_USER_ID] = new HTTPRequestV1FormatterTest();
         $actual = $formatter->format($record);
         $expect['context']['ctxErr'][0]['type'] = "NB\\AppComponents\\Test\\Logging\\Monolog\\Formatters\\HTTPRequestV1FormatterTest";
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);
@@ -256,9 +250,8 @@ class HTTPRequestV1FormatterTest extends TestCase
             'message' => 'test',
             'context' => [
                 HTTPRequestV1Formatter::KEY_REQUEST => new ServerRequest('GET', '/test'),
-                HTTPRequestV1Formatter::KEY_USER => 1,
+                HTTPRequestV1Formatter::KEY_USER_ID => 1,
                 HTTPRequestV1Formatter::KEY_IP => [],
-                HTTPRequestV1Formatter::KEY_RUNTIME => [],
             ],
             'level' => 200,
             'level_name' => 'INFO',
@@ -283,12 +276,8 @@ class HTTPRequestV1FormatterTest extends TestCase
                         'msg' => 'invalid type of ip field',
                         'type' => 'array',
                     ],
-                    [
-                        'msg' => 'invalid type of runtime field',
-                        'type' => 'array',
-                    ],
                 ],
-                'user' => '1',
+                'userID' => '1',
             ],
         ];
         $this->assertEquals(json_encode($expect, JSON_UNESCAPED_SLASHES)."\n", $actual);

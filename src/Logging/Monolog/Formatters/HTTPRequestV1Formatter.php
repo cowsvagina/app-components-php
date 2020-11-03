@@ -40,8 +40,7 @@ class HTTPRequestV1Formatter implements FormatterInterface
 
     const KEY_REQUEST = '__REQUEST__';
     const KEY_IP = '__IP__';
-    const KEY_USER = '__USER__';
-    const KEY_RUNTIME = '__RUNTIME__';
+    const KEY_USER_ID = '__USER_ID__';
 
     protected string $service;
     protected string $environment;
@@ -105,16 +104,16 @@ class HTTPRequestV1Formatter implements FormatterInterface
         }
         unset($context[self::KEY_IP]);
 
-        $user = $context[self::KEY_USER] ?? null;
+        $user = $context[self::KEY_USER_ID] ?? null;
         if (is_numeric($user) || is_string($user)) {
-            $context['user'] = strval($user);
+            $context['userID'] = strval($user);
         } else if ($user !== null) {
             $context['ctxErr'][] = [
-                'msg' => 'invalid type of user field',
+                'msg' => 'invalid type of user id field',
                 'type' => $this->getType($user),
             ];
         }
-        unset($context[self::KEY_USER]);
+        unset($context[self::KEY_USER_ID]);
 
         $req = $context[self::KEY_REQUEST] ?? null;
         if (!($req instanceof ServerRequestInterface)) {
@@ -126,24 +125,13 @@ class HTTPRequestV1Formatter implements FormatterInterface
         }
         unset($context[self::KEY_REQUEST]);
 
-        $runtime = $context[self::KEY_RUNTIME] ?? null;
-        if (is_numeric($runtime)) {
-            $context['runtime'] = floatval($runtime);
-        } else if ($runtime !== null) {
-            $context['ctxErr'][] = [
-                'msg' => 'invalid type of runtime field',
-                'type' => $this->getType($runtime),
-            ];
-        }
-        unset($context[self::KEY_RUNTIME]);
-
         $dt = $record['datetime'] ?? new \DateTime();
         if (!($dt instanceof \DateTimeInterface)) {
             $dt = new \DateTime();
         }
 
         $data = [
-            'schema' => 'http.request.v1',
+            'schema' => self::SCHEMA,
             'service' => $this->service,
             'environment' => $this->environment,
             'time' => $dt->format('Y-m-d\TH:i:s.uP'),
