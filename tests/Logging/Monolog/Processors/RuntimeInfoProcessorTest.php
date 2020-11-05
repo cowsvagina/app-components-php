@@ -19,7 +19,7 @@ class RuntimeInfoProcessorTest extends TestCase
         $logger->info("test", ['abc' => 'def']);
         fseek($stream, 0);
         $this->assertEquals([
-            'runtime' => [
+            'runtimeInfo' => [
                 'lang' => 'PHP-'.phpversion(),
                 'sapi' => 'cli',
                 'pid' => getmypid(),
