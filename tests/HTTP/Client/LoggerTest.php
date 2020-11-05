@@ -115,11 +115,7 @@ class LoggerTest extends TestCase
                 ],
                 'body' => '{"abc":"123"}',
             ],
-            'costs' => [
-                'total' => 1.2,
-                'upstream' => 0.4,
-                'downstream' => 0.6,
-            ],
+            'duration' => 1.2,
             'exception' => [
                 'msg' => 'error',
             ],
