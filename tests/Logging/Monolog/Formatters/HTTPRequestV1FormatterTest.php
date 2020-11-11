@@ -18,7 +18,7 @@ class HTTPRequestV1FormatterTest extends TestCase
         $formatter = new HTTPRequestV1Formatter($this->service, $this->env);
 
         $now = new \DateTime();
-        $req = (new ServerRequest('POST', '/test?q1=1&q2=2', [
+        $req = (new ServerRequest('POST', '/test', [
             'content-type' => 'application/x-www-form-urlencoded',
         ]))->withQueryParams(['q1' => '1', 'q2' => '2'])->withParsedBody(['q3' => '3', 'q4' => '4']);
         $record = [
@@ -43,7 +43,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => 'POST',
             'path' => '/test',
             'headers' => ['content-type' => 'application/x-www-form-urlencoded'],
-            'get' => ['q1' => '1', 'q2' => '2'],
+            'query' => ['q1' => '1', 'q2' => '2'],
             'post' => ['q3' => '3', 'q4' => '4'],
             'context' => [
                 'ip' => '1.1.1.1',
@@ -85,7 +85,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => 'POST',
             'path' => '/test',
             'headers' => ['content-type' => 'application/x-www-form-urlencoded'],
-            'get' => ['q1' => '1', 'q2' => '2'],
+            'query' => ['q1' => '1', 'q2' => '2'],
             'post' => ['q3' => '3', 'q4' => '4'],
             'context' => [
                 'extra1' => 'e1',
@@ -131,7 +131,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => 'POST',
             'path' => '/test',
             'headers' => ['content-type' => 'application/x-www-form-urlencoded', 'white1' => 'v1'],
-            'get' => ['q1' => '1', 'q2' => '2'],
+            'query' => ['q1' => '1', 'q2' => '2'],
             'post' => ['q3' => '3', 'q4' => '4'],
             'context' => [
                 'ip' => '1.1.1.1',
@@ -168,7 +168,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => '',
             'path' => '',
             'headers' => new class{},
-            'get' => new class{},
+            'query' => new class{},
             'post' => new class{},
             'context' => [
                 'ctxErr' => [
@@ -217,7 +217,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => 'GET',
             'path' => '/test',
             'headers' => new class{},
-            'get' => new class{},
+            'query' => new class{},
             'post' => new class{},
             'context' => [
                 'ip' => '1.1.1.1',
@@ -268,7 +268,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => 'GET',
             'path' => '/test',
             'headers' => new class{},
-            'get' => new class{},
+            'query' => new class{},
             'post' => new class{},
             'context' => [
                 'ctxErr' => [
@@ -314,7 +314,7 @@ class HTTPRequestV1FormatterTest extends TestCase
             'method' => '',
             'path' => '',
             'headers' => new class{},
-            'get' => new class{},
+            'query' => new class{},
             'post' => new class{},
             'context' => [
                 'ctxErr' => [

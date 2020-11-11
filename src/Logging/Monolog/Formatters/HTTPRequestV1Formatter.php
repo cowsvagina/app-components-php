@@ -17,12 +17,11 @@ declare(strict_types=1);
  * $logger->pushHandler($handler);
  *
  * $logger->info('', [
- *     PsrRequestFormatter::KEY_REQUEST = $req,
- *     PsrRequestFormatter::KEY_IP = $ip,
- *     PsrRequestFormatter::KEY_USER = $user,
+ *      PsrRequestFormatter::KEY_REQUEST = $req,
+ *      PsrRequestFormatter::KEY_IP = $ip,
+ *      PsrRequestFormatter::KEY_USER = $user,
  *
- *     'runtime' => 20,
- *     'other' => '..',
+ *      ...
  * ]);
  */
 
@@ -138,7 +137,7 @@ class HTTPRequestV1Formatter implements FormatterInterface
             'method' => $req ? \strtoupper($req->getMethod()) : '',
             'path' => $req ? $req->getUri()->getPath() : '',
             'headers' => $req ? $this->pickHeaders($req) : $emptyObj,
-            'get' => $req ? ($req->getQueryParams() ?: $emptyObj) : $emptyObj,
+            'query' => $req ? ($req->getQueryParams() ?: $emptyObj) : $emptyObj,
             'post' => $emptyObj,
             'context' => $context,
         ];
