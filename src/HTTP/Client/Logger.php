@@ -204,14 +204,11 @@ class Logger
             if (stripos($type, $each) !== false) {
                 $body = strval($r->getBody());
                 if (strtolower($each) === 'application/x-www-form-urlencoded') {
-                    $postForm = Helper::parseQuery($body, PHP_QUERY_RFC1738);
-                    if ($postForm) {
+                    if ($postForm = Helper::parseQuery($body, PHP_QUERY_RFC1738)) {
                         $data['postForm'] = $postForm ?: new class{};
                     }
-                } else {
-                    if ($data) {
-                        $data['body'] = $body ?: '';
-                    }
+                } else if ($body) {
+                    $data['body'] = $body;
                 }
                 break;
             }
